@@ -1,0 +1,39 @@
+[package]
+name = "slcanio"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+description = "Cross-platform SLCAN codec and serial CAN / CAN FD driver"
+repository = "https://github.com/gmmyung/slcanio"
+keywords = ["can", "can-fd", "slcan", "serial", "tokio"]
+categories = ["hardware-support", "asynchronous"]
+
+[features]
+default = ["tokio", "can-fd"]
+tokio = ["dep:tokio", "dep:tokio-serial"]
+blocking = ["dep:serialport"]
+can-fd = []
+
+[dependencies]
+arrayvec = "0.7"
+thiserror = "2"
+tokio = { version = "1", optional = true, features = ["io-util", "sync", "time", "rt", "macros"] }
+tokio-serial = { version = "5", optional = true }
+serialport = { version = "4", optional = true, default-features = false }
+
+[dev-dependencies]
+proptest = "1"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+
+[[example]]
+name = "classic"
+required-features = ["tokio"]
+
+[[example]]
+name = "fd"
+required-features = ["tokio", "can-fd"]
+
+[[example]]
+name = "blocking"
+required-features = ["blocking", "can-fd"]

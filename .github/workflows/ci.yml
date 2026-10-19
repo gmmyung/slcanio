@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Lint
+        run: cargo clippy --all-features --all-targets -- -D warnings
+      - name: All features
+        run: cargo test --all-features --locked
+      - name: Default features
+        run: cargo test --locked
+      - name: Core without default features
+        run: cargo test --no-default-features --locked
+      - name: Tokio without CAN FD
+        run: cargo check --no-default-features --features tokio --all-targets --locked
+      - name: Blocking without CAN FD
+        run: cargo check --no-default-features --features blocking --all-targets --locked
+      - name: Documentation
+        run: cargo doc --all-features --no-deps --locked
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.85.0'
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --all-features --locked
